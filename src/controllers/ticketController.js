@@ -17,3 +17,13 @@ const createIngresso = async (evento, local, data_evento, categoria, preco, quan
     );
     return result.rows[0];
 };
+
+
+
+const updateIngresso = async (id, evento, local, data_evento, categoria, preco, quantidade_disponivel) => {
+    const result = await pool.query(
+        "UPDATE ingressos SET evento = $1, local = $2, data_evento = $3, categoria = $4, preco = $5, quantidade_disponivel = $6 WHERE id = $7 RETURNING *",
+        [id,evento, local, data_evento, categoria, preco, quantidade_disponivel]
+    );
+    return result.rows[0];
+};
