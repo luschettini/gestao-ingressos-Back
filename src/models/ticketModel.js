@@ -1,49 +1,46 @@
-const getAllIngressos = async (req, res) => {
-    try {
-        const ingressos = await ticketModel.getIngressos();
-        res.json(ingressos);
-    } catch (error) {
-        res.status(404).json({ message: "Erro ao buscar ingresso(s)." 
-        });
-    }
+const getIngressos = async () => {
+    const result = await pool.query("SELECT * FROM ingressos");
+    return result.rows;
 };
 
-const getIngresso = async (req, res) => {
-    try {
-        const ingresso = await ticketModel.getIngressoById(req.params.id);
-        if (!ingresso) {
-            return res.status(404).json({ message: "Ingresso(s) não encontrado." });
-        }
-        res.json(ingresso);
-    } catch (error) {
-        res.status(500).json({ message: "Erro ao buscar ingresso(s)." });
-    }
+
+const getIngressoById = async (id) => {
+    const result = await pool.query("SELECT * FROM ingressos WHERE id = $1", [id]);
+    return result.rows[0];
 };
 
-const createIngresso = async (req, res) => {
-    try {
-        const { evento, local, data_evento, categoria, preco, quantidade_disponivel } = req.body;
-        const newIngresso = await ticketModel.createUser(evento, local, data_evento, categoria, preco, quantidade_disponivel);
-        res.status(201).json(newIngresso);
-    } catch (error) {
-     console.log(error);
-        if (error.code === "23505") {
-            return res.status(400).json({ message: "Ingresso já cadastrado." });
-        }
-        res.status(500).json({ message: "Erro ao criar usuário." });
-    }
-};
-    
-    const updateIngresso = async (req, res) => {
-    try {
-        const { evento, local, data_evento, categoria, preco, quantidade_disponivel } = req.body;
-        const updatedIngresso = await  ticketModel.updateUser(req.params.id, evento, local, data_evento, categoria, preco, quantidade_disponivel);
-        if (!updatedIngresso) {
-            return res.status(404).json({ message: "Ingresso(s) não encontrado." });
-        }
-        res.json(updatedIngresso);
-    } catch (error) {
-        res.status(500).json({ message: "Erro ao atualizar ingresso(s)." });
-    }
+
+const createIngresso = async (evento, local, data_evento, categoria, preco, quantidade_disponivel) => {
+    const result = await pool.query(
+        "INSERT INTO ingressos (evento, local, data_evento, categoria, preco, quantidade_disponivel) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+
+
+        [evento, local, data_evento, categoria, preco, quantidade_disponivel]
+    );
+    return result.rows[0];
 };
 
+
+const updateIngresso = async (id, evento, local, data_evento, categoria, preco, quantidade_disponivel) => {
+    const result = await pool.query(
+        "UPDATE ingressos SET evento = $1, local = $2, data_evento = $3, categoria = $4, preco = $5, quantidade_disponivel = $6 WHERE id = $7 RETURNING *",
+        [id,evento, local, data_evento, categoria, preco, quantidade_disponivel]
+    );
+    return result.rows[0];
+};
+
+
+const deleteIngresso = async (id) => {
+    const result = await pool.query("DELETE FROM ingressos WHERE id = $1 RETURNING *", [id]);
+
+
+    if (result.rowCount === 0) {
+        return { error: "Ingresso não encontrado." };
+    }
+
+
+    return { message: "Ingresso excluído." };
+};
+
+
+module.exports = { getIngressos, getIngressoById, createIngresso, updateIngresso, deleteIngresso };
