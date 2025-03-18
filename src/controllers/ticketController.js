@@ -28,7 +28,7 @@ const createIngresso = async (req, res) => {
         const newIngresso = await ticketModel.createUser(evento, local, data_evento, categoria, preco, quantidade_disponivel);
         res.status(201).json(newIngresso);
     } catch (error) {
-     console.log(error);
+    console.log(error);
         if (error.code === "23505") { 
             return res.status(400).json({ message: "Ingresso já cadastrado." });
         }
